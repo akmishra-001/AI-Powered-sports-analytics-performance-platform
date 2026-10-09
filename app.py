@@ -43,17 +43,18 @@ if "cached_player_metrics" not in st.session_state:
     st.session_state.cached_player_metrics = {}
 
 # ==========================================
-# LOAD TRAINED MODELS & SCALERS
+# LOAD TRAINED MODELS & SCALERS (Optimized for Cloud RAM)
 # ==========================================
 @st.cache_resource
 def load_all_assets():
-    perf_model = keras.models.load_model("models/performance_model.keras")
+    # compile=False reduces memory footprint to prevent segmentation faults on cloud servers
+    perf_model = keras.models.load_model("models/performance_model.keras", compile=False)
     perf_scaler = joblib.load("models/scaler_performance.pkl")
     
-    match_model = keras.models.load_model("models/match_outcome_model.keras")
+    match_model = keras.models.load_model("models/match_outcome_model.keras", compile=False)
     match_scaler = joblib.load("models/scaler_match.pkl")
     
-    lstm_model = keras.models.load_model("models/forecasting_lstm.keras")
+    lstm_model = keras.models.load_model("models/forecasting_lstm.keras", compile=False)
     lstm_scaler = joblib.load("models/scaler_lstm.pkl")
     
     return perf_model, perf_scaler, match_model, match_scaler, lstm_model, lstm_scaler
