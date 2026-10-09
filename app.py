@@ -8,7 +8,7 @@ import cv2
 import tempfile
 import os
 
-from utils.cv_engine import SportsCVEngine
+# NOTE: Yahan se 'from utils.cv_engine import SportsCVEngine' ko hata diya gaya hai taaki startup par load na pade!
 
 # ==========================================
 # PAGE CONFIGURATION
@@ -64,8 +64,6 @@ try:
 except Exception as e:
     st.sidebar.error("❌ Models load nahi ho paye! Pehle `python train_models.py` run karein.")
 
-# NOTE: cv_engine yahan global initialize nahi hota taaki app start par RAM crash (Segmentation Fault) na ho.
-
 # Sidebar Navigation Guide
 st.sidebar.header("📌 Project Navigation Guide")
 st.sidebar.info(
@@ -87,13 +85,15 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 ])
 
 # ------------------------------------------
-# TAB 1: COMPUTER VISION ENGINE (NON-BLOCKING SELECTION & LAZY LOADED)
+# TAB 1: COMPUTER VISION ENGINE (LAZY IMPORT & LOADED)
 # ------------------------------------------
 with tab1:
     st.subheader("📹 Computer Vision: Live Player Detection & Analytics")
     st.caption("👉 Live detection chalti dikhegi. Stop button se video freeze hoke player selection dropdown smooth chalega.")
 
-    # Lazy initialization of CV Engine inside Tab 1 to prevent startup RAM crash
+    # Lazy Import and Initialization inside Tab 1 to prevent startup CUDA/Segmentation fault
+    from utils.cv_engine import SportsCVEngine
+
     @st.cache_resource
     def get_cv_engine():
         return SportsCVEngine()
@@ -137,13 +137,11 @@ with tab1:
 
             cap.release()
 
-            # Save processed data to session_state to prevent app freeze
             final_metrics = cv_engine.calculate_final_player_metrics(player_stats_db)
             st.session_state.cached_player_metrics = final_metrics
             st.session_state.cached_final_frame = last_frame
             st.session_state.video_processed = True
 
-        # Render Cached Analytics (Non-blocking Dropdown interaction)
         if st.session_state.video_processed and st.session_state.cached_player_metrics:
             st.divider()
             st.success("✅ Video Stopped & Player Metrics Saved Successfully!")
