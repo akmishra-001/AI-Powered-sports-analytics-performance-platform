@@ -47,7 +47,6 @@ if "cached_player_metrics" not in st.session_state:
 # ==========================================
 @st.cache_resource
 def load_all_assets():
-    # compile=False reduces memory footprint to prevent segmentation faults on cloud servers
     perf_model = keras.models.load_model("models/performance_model.keras", compile=False)
     perf_scaler = joblib.load("models/scaler_performance.pkl")
     
@@ -65,7 +64,7 @@ try:
 except Exception as e:
     st.sidebar.error("❌ Models load nahi ho paye! Pehle `python train_models.py` run karein.")
 
-cv_engine = SportsCVEngine()
+# NOTE: cv_engine yahan global initialize nahi hota taaki app start par RAM crash (Segmentation Fault) na ho.
 
 # Sidebar Navigation Guide
 st.sidebar.header("📌 Project Navigation Guide")
@@ -88,11 +87,18 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 ])
 
 # ------------------------------------------
-# TAB 1: COMPUTER VISION ENGINE (NON-BLOCKING SELECTION)
+# TAB 1: COMPUTER VISION ENGINE (NON-BLOCKING SELECTION & LAZY LOADED)
 # ------------------------------------------
 with tab1:
     st.subheader("📹 Computer Vision: Live Player Detection & Analytics")
     st.caption("👉 Live detection chalti dikhegi. Stop button se video freeze hoke player selection dropdown smooth chalega.")
+
+    # Lazy initialization of CV Engine inside Tab 1 to prevent startup RAM crash
+    @st.cache_resource
+    def get_cv_engine():
+        return SportsCVEngine()
+    
+    cv_engine = get_cv_engine()
 
     uploaded_video = st.file_uploader("Upload a Match Video Clip (.mp4, .avi, .mov)", type=["mp4", "avi", "mov"])
     
