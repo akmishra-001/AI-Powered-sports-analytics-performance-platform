@@ -1,3 +1,6 @@
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -6,7 +9,6 @@ from tensorflow import keras
 import joblib
 import cv2
 import tempfile
-import os
 
 # NOTE: Yahan se 'from utils.cv_engine import SportsCVEngine' ko hata diya gaya hai taaki startup par load na pade!
 
